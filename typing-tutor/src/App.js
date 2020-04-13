@@ -7,31 +7,36 @@ import TypingBox from './comps/typing-box';
 import TypingSpeed from './comps/typing-speed';
 import LevelSelector from './comps/level-selector';
 import para1 from './data/data.json';
+import SideNav from './comps/side-nav';
 
 function App() {
   const [typed_str, setTypedStr] = useState('');
-  const [random_str, setRandomStr] = useState('qwerty');
+  const [random_str, setRandomStr] = useState('');
   const [started, setStarted] = useState(false);
   const [wrong_letters, setWrongLetters] = useState([]);
   const [levels, setLevels] = useState([]);
+  const [selected_level_data, setSelectedLevelData] = useState(para1[0]);
 
   useEffect(() => {
     //...here your init code
     setLevels(para1.map(l => l.title))
+    //setSelectedLevelData(para1[0]);
   }, []);
 
   function onLevelSelect(selectedIndex) {
 
-    selectedIndex--;
-    if (selectedIndex != -1) {
-      let rand = Math.round(Math.random() * para1[selectedIndex].content.length);
-      rand = rand ? rand - 1 : 0;
-      console.log('app > onLevelSelect', rand, '  >>  ', para1[selectedIndex].content[rand])
-      setRandomStr(para1[selectedIndex].content[rand]);
-    }
-    else {
-      setRandomStr('');
-    }
+    // RESET
+    setStarted(false);
+    setTypedStr('');
+    setWrongLetters([]);
+    setSelectedLevelData(para1[selectedIndex]);
+  }
+
+  function onCurrentRandomStringChange(str) {
+    setStarted(false);
+    setRandomStr(str);
+    setTypedStr('');
+    setWrongLetters([]);
   }
 
   function onType(key_code, input_str) {
@@ -41,6 +46,7 @@ function App() {
     }
 
     if (started) {
+
       setTypedStr(input_str);
 
       let err_letters = [];
@@ -57,13 +63,23 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <h1>Typing Tutor</h1>
-      <hr />
-      <LevelSelector levels={levels} onLevelSelect={onLevelSelect}></LevelSelector>
-      <RandomPara str={random_str} typed_str={typed_str}></RandomPara>
-      <TypingBox str={random_str} onType={onType} started={started}></TypingBox>
-      <TypingSpeed typed_str={typed_str} wrong_letters={wrong_letters} started={started}></TypingSpeed>
+    <div className="wrapper">
+
+      <SideNav levels={levels} onLevelSelect={onLevelSelect}></SideNav>
+
+      <div id="content" className="App">
+        <h1>Typing Tutor</h1>
+        <hr />
+        <RandomPara
+          started={started}
+          selected_level_data={selected_level_data}
+          onCurrentRandomStringChange={onCurrentRandomStringChange}
+          onType={onType}>
+        </RandomPara>
+        
+        <TypingSpeed typed_str={typed_str} wrong_letters={wrong_letters} started={started}></TypingSpeed>
+      </div>
+
     </div>
   );
 }
